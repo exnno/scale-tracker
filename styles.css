@@ -1,0 +1,155 @@
+/* styles.css — Scale Trainer
+   Design brief: read at arm's length while sitting at a piano. Calm, uncluttered,
+   large legible type, generous tap targets. One signature: the scale instruction
+   is the hero during a session. Colour is spent only on the three rating buttons.
+   (c) 2026 Peter Birchley. All rights reserved. */
+
+:root {
+  /* palette — muted, keyboard-inspired: ivory ground, felt-teal ink, brass accent */
+  --bg: #1b1e22;            /* deep slate (dark ground for stage-like focus) */
+  --surface: #24282e;      /* card */
+  --surface-2: #2c313a;    /* chip / input */
+  --ink: #f3efe6;          /* ivory text */
+  --ink-soft: #b7b2a6;     /* muted text */
+  --line: #3a3f48;         /* hairline */
+  --brass: #c9a24b;        /* accent (music-stand brass) */
+
+  /* rating colours — the only strong colour in the app */
+  --struggled: #c96b5a;    /* clay red */
+  --okay: #c9a24b;         /* brass */
+  --nailed: #6fa88a;       /* felt green */
+
+  --radius: 14px;
+  --gap: 16px;
+  --maxw: 560px;
+
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 12px 16px 40px;
+  min-height: 100vh;
+}
+
+/* ---- top bar ---- */
+.bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 8px 2px 16px;
+}
+.bar h1 { font-size: 1.25rem; font-weight: 700; margin: 0; letter-spacing: .01em; }
+.bar .count { color: var(--ink-soft); font-variant-numeric: tabular-nums; font-size: 1rem; }
+
+.link {
+  background: none; border: none; color: var(--brass);
+  font-size: 1rem; font-family: inherit; padding: 8px; cursor: pointer;
+}
+.link:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 8px; }
+
+/* ---- cards ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: var(--gap);
+}
+.card h2 { margin: 0 0 12px; font-size: .85rem; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--ink-soft); font-weight: 600; }
+.card p { margin: 0 0 8px; line-height: 1.5; }
+.card p:last-child { margin-bottom: 0; }
+
+.hint { color: var(--ink-soft); font-size: .85rem; }
+
+/* ---- chips (grade / scope / form selectors) ---- */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  background: var(--surface-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 12px 18px; font-size: 1rem; font-family: inherit; cursor: pointer;
+  min-height: 48px;
+}
+.chip.is-on { background: var(--brass); border-color: var(--brass); color: #201a08; font-weight: 600; }
+.chip:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+/* ---- session cap input ---- */
+.capline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 2; }
+.capinput {
+  width: 80px; background: var(--surface-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px;
+  font-size: 1rem; font-family: inherit; text-align: center;
+}
+.capinput:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+
+/* ---- pool + start ---- */
+.poolcard { text-align: center; }
+.poolcount { font-size: 1.1rem; }
+.poolcount strong { color: var(--brass); font-size: 1.4rem; }
+.startrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+.startrow > button { flex: 1 1 auto; }
+
+.primary, .secondary {
+  border-radius: var(--radius); padding: 16px 20px; font-size: 1.05rem;
+  font-family: inherit; cursor: pointer; min-height: 54px; border: 1px solid transparent;
+}
+.primary { background: var(--brass); color: #201a08; font-weight: 700; border-color: var(--brass); }
+.secondary { background: var(--surface-2); color: var(--ink); border-color: var(--line); }
+.primary:focus-visible, .secondary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ---- progress bar ---- */
+.progress { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin: 0 2px 20px; }
+.progressfill { height: 100%; background: var(--brass); transition: width .25s ease; }
+
+/* ---- session: the hero instruction ---- */
+.scalecard { text-align: center; padding: 40px 20px; }
+.instruction {
+  font-size: 2rem; line-height: 1.25; font-weight: 700; margin: 0 0 14px;
+  letter-spacing: .01em;
+}
+.prev { color: var(--ink-soft); font-size: .95rem; margin: 0; }
+
+/* ---- rating buttons ---- */
+.ratecard { text-align: center; }
+.ratelead { color: var(--ink-soft); margin-bottom: 14px; }
+.rates { display: flex; flex-direction: column; gap: 12px; }
+.rate {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px; font-size: 1.1rem; font-family: inherit; font-weight: 600;
+  cursor: pointer; min-height: 58px; color: var(--ink);
+  background: var(--surface-2);
+}
+.rate-struggled { border-color: var(--struggled); }
+.rate-okay { border-color: var(--okay); }
+.rate-nailed { border-color: var(--nailed); }
+.rate-struggled:active { background: var(--struggled); color: #fff; }
+.rate-okay:active { background: var(--okay); color: #201a08; }
+.rate-nailed:active { background: var(--nailed); color: #08130d; }
+.rate:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* wider screens: rating buttons in a row */
+@media (min-width: 480px) {
+  .rates { flex-direction: row; }
+  .rates .rate { flex: 1; }
+}
+
+/* ---- done screen ---- */
+.done { text-align: center; padding: 40px 20px; }
+.bigtick { font-size: 3.5rem; color: var(--nailed); margin: 0 0 8px; line-height: 1; }
+.done h2 { margin: 0 0 10px; }
+
+.copyright { color: var(--ink-soft); font-size: .8rem; text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .progressfill { transition: none; }
+}

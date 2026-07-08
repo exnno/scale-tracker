@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!-- index.html — Scale Trainer. (c) 2026 Peter Birchley. All rights reserved. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b1e22">
+  <title>Scale Trainer</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app"><!-- rendered by render.js --></main>
+
+  <!-- Scripts load in a FIXED ORDER. boot.js is always last. Later files may
+       call functions from earlier ones; nothing runs until boot. If you add or
+       remove a script, update this list AND the sw.js ASSETS list, keeping
+       boot.js last. -->
+  <script src="config.js"></script>
+  <script src="syllabus.js"></script>
+  <script src="state.js"></script>
+  <script src="storage.js"></script>
+  <script src="session.js"></script>
+  <script src="render.js"></script>
+  <script src="dispatch.js"></script>
+  <script src="boot.js"></script>
+</body>
+</html>
