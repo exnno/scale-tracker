@@ -53,7 +53,13 @@ function sanitizeRatings(raw) {
             return h && validRating(h.r) && typeof h.t === "number";
           })
         : [];
-      out[id] = { last: last, history: history };
+      var clean = { last: last, history: history };
+      // Build 2 scheduling fields. Optional + backward-compatible: a v1 file
+      // (backupVersion 1) has neither, and that's fine — a record with no
+      // nextDue simply reads as "due now" (see scheduler.isDue).
+      if (typeof rec.nextDue === "number") clean.nextDue = rec.nextDue;
+      if (typeof rec.interval === "number" && rec.interval > 0) clean.interval = rec.interval;
+      out[id] = clean;
     });
   }
   return out;

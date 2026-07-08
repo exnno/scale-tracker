@@ -3,7 +3,7 @@
 // update the ASSETS list to match index.html (keep boot.js last).
 // (c) 2026 Peter Birchley. All rights reserved.
 
-const CACHE_VERSION = "st-v1";
+const CACHE_VERSION = "st-v2";
 
 const ASSETS = [
   "./",
@@ -13,6 +13,7 @@ const ASSETS = [
   "syllabus.js",
   "state.js",
   "storage.js",
+  "scheduler.js",
   "session.js",
   "render.js",
   "dispatch.js",

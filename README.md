@@ -4,21 +4,29 @@ A practice guide for piano scales following the ABRSM syllabus. It tells you wha
 to play and you play it on your own piano — there's no microphone or listening.
 Mobile-first, installable, works offline.
 
-## Current state (Build 1, v1.0.0)
+## Current state (Build 2, v2.0.0)
 
 - **Grades 1–3 similar-motion scales** (majors and minors).
 - Pick a **grade**, choose whether to include **earlier grades**, choose which
   **minor forms** to practise (natural / harmonic / melodic — Grade 3 drops
   natural per the syllabus), and an optional **session limit**.
+- **Today's practice** — an adaptive set built from what you're *due* to review.
+  Scales you **struggled** with come back the next day; **okay** returns in a few
+  days; **nailed** stretches further out each time (a week → fortnight → month).
+  The due set is ordered weakest-first.
+- **Practise all** and **Surprise me** remain as manual overrides that ignore
+  due-dates.
 - Work through the set one scale at a time, rating each **Struggled / Okay /
-  Nailed it**. Ratings are saved on your device.
-- **Surprise me** shuffles the set.
-- **Export / import** a save file to move your data or keep a backup.
+  Nailed it**. Ratings and their schedule are saved on your device.
+- **Export / import** a save file to move your data or keep a backup (v2 file
+  format; v1 files still import).
 
 ## Not yet built
 
-- Adaptive practice scheduler (Build 2) — the multi-day plan that brings weak
-  scales round more often, plus the "Complete keys (advanced)" mode.
+- **Multi-day workout plan** (practice-days-per-week driving a rolling schedule) —
+  a thin layer on top of the now-working scheduler, planned for v3.
+- **"Complete keys (advanced)"** scope — defined in config, still parked (needs
+  the all-12-keys data), planned for v3.
 - Tempo target display and metronome.
 - Arpeggios, contrary motion, chromatic scales (data is already prepared).
 - Accounts, login, payments (deliberately deferred).
@@ -30,7 +38,8 @@ script files loading in a fixed order (`boot.js` last), shared global scope, a b
 integrity guard, `localStorage` for data, cache-first service worker for offline.
 Hosted on GitHub Pages and editable from the GitHub web UI.
 
-See `MAP.md` for the file/function map and `SCALEShandoff_v1.md` for full detail.
+See `MAP.md` for the file/function map and `SCALEShandoff_v2.md` for full detail
+(`SCALEShandoff_v1.md` covers the original build).
 
 ## Syllabus source
 

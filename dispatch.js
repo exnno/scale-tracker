@@ -72,6 +72,10 @@ function onClick(e) {
       saveSettings(); render(); break;
     }
 
+    case "start-due":
+      if (dueCount(currentSelection()) === 0) return;
+      startSession("due"); render(); break;
+
     case "start-all":
       if (poolSize(currentSelection()) === 0) return;
       startSession("all"); render(); break;

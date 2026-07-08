@@ -99,6 +99,15 @@ html, body {
 .startrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
 .startrow > button { flex: 1 1 auto; }
 
+/* Build 2: due-set layout */
+.primary.wide { display: block; width: 100%; margin-top: 4px; }
+.duehint { margin: 10px 0 0; }
+.manualrow { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.primary:disabled {
+  background: var(--surface-2); color: var(--ink-soft);
+  border-color: var(--line); font-weight: 600; cursor: default;
+}
+
 .primary, .secondary {
   border-radius: var(--radius); padding: 16px 20px; font-size: 1.05rem;
   font-family: inherit; cursor: pointer; min-height: 54px; border: 1px solid transparent;

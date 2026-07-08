@@ -28,6 +28,7 @@ function render() {
 function renderHome() {
   var sel = currentSelection();
   var count = poolSize(sel);
+  var due = dueCount(sel);
   var s = state.settings;
 
   var gradeBtns = [1, 2, 3].map(function (g) {
@@ -79,9 +80,16 @@ function renderHome() {
     + '</section>'
 
     + '<section class="card poolcard">'
-    + '<p class="poolcount"><strong>' + count + '</strong> scale' + (count === 1 ? "" : "s") + ' in today\u2019s set</p>'
-    + '<div class="startrow">'
-    + '<button class="primary" data-action="start-all">Start practice</button>'
+    + '<p class="poolcount"><strong>' + due + '</strong> scale' + (due === 1 ? "" : "s") + ' due today</p>'
+    + '<button class="primary wide" data-action="start-due"' + (due === 0 ? " disabled" : "") + '>'
+    + (due === 0 ? "Nothing due \u2014 all caught up" : "Today\u2019s practice") + '</button>'
+    + '<p class="hint duehint">'
+    + (due === 0
+        ? "Come back later, or use the buttons below to practise anyway."
+        : "The scales you\u2019re due to review, weakest first.")
+    + '</p>'
+    + '<div class="startrow manualrow">'
+    + '<button class="secondary" data-action="start-all">Practise all ' + count + '</button>'
     + '<button class="secondary" data-action="start-surprise">Surprise me</button>'
     + '</div>'
     + (count === 0 ? '<p class="hint">Pick at least one minor form (or a grade with major scales) to build a set.</p>' : "")
@@ -155,6 +163,8 @@ function renderAbout() {
     + '<h2>What\u2019s here</h2>'
     + '<p>Grades 1\u20133 similar-motion scales. Pick a grade, choose whether to include earlier grades, '
     + 'set which minor forms you practise, then work through them rating each one. Your ratings are saved on this device.</p>'
+    + '<p>\u201cToday\u2019s practice\u201d brings back the scales you\u2019re due to review: ones you struggled with return the next day, '
+    + 'and ones you nail keep stretching further out (a week, a fortnight, a month) so you spend your time where it counts.</p>'
     + '</section>'
 
     + '<section class="card">'

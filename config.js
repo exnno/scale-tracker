@@ -3,8 +3,9 @@
 // Loads first (nothing depends on anything). No DOM, no storage calls here.
 // (c) 2026 Peter Birchley. All rights reserved.
 
-const APP_VERSION = "1.0.0";          // human app version (About page)
-const BACKUP_VERSION = 1;             // save-file schema version (bump on schema change)
+const APP_VERSION = "2.0.0";          // human app version (About page)
+const BACKUP_VERSION = 2;             // save-file schema version (bump on schema change)
+                                      // v2 adds per-item nextDue/interval (Build 2 scheduler)
 
 // localStorage keys (namespaced "st:" = Scale Trainer)
 const K_SETTINGS = "st:settings";     // user selection: grade, scope, minorForms, etc.

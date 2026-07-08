@@ -12,10 +12,11 @@ Order in `index.html` and the `sw.js` ASSETS list must match:
 2. `syllabus.js` — scale data + expansion (pure)
 3. `state.js` — in-memory state object + pure helpers
 4. `storage.js` — localStorage load/save + export/import
-5. `session.js` — session queue + rating application
-6. `render.js` — all DOM drawing
-7. `dispatch.js` — single delegated event handler
-8. `boot.js` — integrity guard + startup (**last**)
+5. `scheduler.js` — spaced-repetition engine (pure); session.js calls it
+6. `session.js` — session queue + rating application
+7. `render.js` — all DOM drawing
+8. `dispatch.js` — single delegated event handler
+9. `boot.js` — integrity guard + startup (**last**)
 
 Shared global scope: top-level `const`/`let` are visible across files. A
 duplicate `const` of the same name in two files is a fatal SyntaxError that kills
@@ -38,8 +39,14 @@ build.
 `validForm`/`validRating`, `sanitizeSettings`, `sanitizeRatings`; `load`,
 `saveSettings`, `saveRatings`; `buildBackup`, `exportText`, `importText`.
 
-**session.js** — `shuffled`, `applyCap`, `startSession`, `endSession`,
-`rateCurrent`, `advance`, `sessionProgress`.
+**scheduler.js** — `DAY_MS`, `NAIL_LADDER`, `INTERVAL`; `nailStreak`,
+`intervalDaysFor`, `schedule` (sets `nextDue`+`interval` on a rating record),
+`isDue`, `dueWeight`, `overdueBy`, `buildDueSet` (weakest-first due set),
+`dueCount`.
+
+**session.js** — `shuffled`, `applyCap`, `startSession` (now incl. `"due"`
+mode), `endSession`, `rateCurrent` (now calls `schedule`), `advance`,
+`sessionProgress`.
 
 **render.js** — `esc`, `el`, `render` (dispatch by `state.view`), `renderHome`,
 `renderSession`, `renderAbout`.
@@ -51,11 +58,14 @@ build.
 
 ## Non-code assets
 
-`index.html`, `styles.css`, `sw.js`, `manifest.json`, `icon-180/192/512.png`.
+`index.html`, `styles.css`, `sw.js`, `manifest.json`, `icon180/192/512.png`.
 
 ## Storage keys
 
 - `st:settings` — `{ grade, scope, minorForms[], sessionCap }`
-- `st:ratings` — `{ itemId: { last, history:[{r,t}] } }`
+- `st:ratings` — `{ itemId: { last, history:[{r,t}], nextDue?, interval? } }`
+  (`nextDue`/`interval` added in Build 2; optional, so v1 records still load)
 
-Backup schema (`backupVersion` 1): `{ app, backupVersion, exportedAt, settings, ratings }`.
+Backup schema (`backupVersion` 2): `{ app, backupVersion, exportedAt, settings, ratings }`.
+A v1 file still imports cleanly — records simply arrive without scheduling
+fields and read as "due now".

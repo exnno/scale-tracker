@@ -26,10 +26,13 @@ function applyCap(items) {
 //   mode: "all"      -> whole pool in syllabus order
 //         "surprise" -> whole pool shuffled
 //         "manual"   -> caller supplies an explicit array of items
+//         "due"      -> only items due today (spaced repetition), weakest-first
 function startSession(mode, manualItems) {
   var pool;
   if (mode === "manual" && Array.isArray(manualItems)) {
     pool = manualItems;
+  } else if (mode === "due") {
+    pool = buildDueSet(currentSelection());   // already ordered weakest-first
   } else {
     pool = buildPool(currentSelection());
     if (mode === "surprise") pool = shuffled(pool);
@@ -56,8 +59,9 @@ function rateCurrent(rating) {
   var rec = state.ratings[item.id] || { last: null, history: [] };
   rec.last = rating;
   rec.history.push({ r: rating, t: Date.now() });
-  // keep history from growing without bound; last 50 is plenty for Build 2
+  // keep history from growing without bound; last 50 is plenty
   if (rec.history.length > 50) rec.history = rec.history.slice(-50);
+  schedule(rec);                 // sets rec.interval + rec.nextDue (Build 2)
   state.ratings[item.id] = rec;
   saveRatings();
 
