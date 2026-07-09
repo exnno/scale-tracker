@@ -55,7 +55,7 @@ function startSession(mode, manualItems) {
     // size to the plan portion (manual cap already folded into plannedPortion)
     var n = plannedPortion(currentSelection());
     if (n > 0 && pool.length > n) pool = pool.slice(0, n);
-    state.session = { queue: pool, index: 0, mode: mode };
+    state.session = { queue: pool, index: 0, mode: mode, results: [], logged: false };
     state.view = "session";
     return state.session;
   } else {
@@ -64,12 +64,33 @@ function startSession(mode, manualItems) {
   }
   pool = applyCap(pool);
 
-  state.session = { queue: pool, index: 0, mode: mode };
+  state.session = { queue: pool, index: 0, mode: mode, results: [], logged: false };
   state.view = "session";
   return state.session;
 }
 
+// Build 4: commit the current sitting to the workout log, once, if it has any
+// ratings. Called both when a session finishes and when it's quit part-way, so
+// partial sittings are never lost. The `logged` flag guards against a
+// double-commit (e.g. finish then "Back to start" both routing through here).
+function commitWorkoutLog() {
+  var s = state.session;
+  if (!s || s.logged) return;
+  if (!s.results || s.results.length === 0) { s.logged = true; return; }
+  state.sessions.push({
+    t: Date.now(),
+    mode: s.mode,
+    results: s.results.slice(),
+  });
+  if (state.sessions.length > MAX_SESSIONS_LOGGED) {
+    state.sessions = state.sessions.slice(state.sessions.length - MAX_SESSIONS_LOGGED);
+  }
+  s.logged = true;
+  saveSessions();
+}
+
 function endSession() {
+  commitWorkoutLog();   // log whatever was rated (quit or finished)
   state.session = null;
   state.view = "home";
 }
@@ -90,7 +111,14 @@ function rateCurrent(rating) {
   state.ratings[item.id] = rec;
   saveRatings();
 
-  return advance();
+  // Build 4: record THIS sitting's result for the workout log.
+  if (state.session) state.session.results.push({ id: item.id, rating: rating });
+
+  var more = advance();
+  // If that was the final item, commit the log now so a sitting is recorded
+  // even if the user closes the app on the done screen without tapping "Back".
+  if (!more) commitWorkoutLog();
+  return more;
 }
 
 // Move to the next item. Returns true if there's another item, false if done.

@@ -182,6 +182,34 @@ html, body {
 }
 .uprow:last-child { border-bottom: none; }
 
+/* ---- segmented toggle (History All/By-key, By-key scope) ---- */
+.segment {
+  display: flex; gap: 0; margin: 0 2px 16px; border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden;
+}
+.segment-sub { margin-top: 0; }
+.seg {
+  flex: 1; background: var(--surface); color: var(--ink-soft);
+  border: none; border-right: 1px solid var(--line);
+  padding: 12px 8px; font-size: .95rem; font-family: inherit; cursor: pointer;
+  min-height: 46px;
+}
+.seg:last-child { border-right: none; }
+.seg.is-on { background: var(--brass); color: #201a08; font-weight: 700; }
+.seg:focus-visible { outline: 2px solid var(--brass); outline-offset: -2px; }
+
+/* grade tag in the by-key all-grades view */
+.gradetag {
+  display: inline-block; font-size: .72rem; font-weight: 700;
+  color: var(--ink-soft); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 6px;
+  padding: 1px 6px; margin-right: 6px; vertical-align: middle;
+}
+
+/* per-workout rating tally chips */
+.tally { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; }
+.tally .dot { width: 10px; height: 10px; }
+
 /* ---- history view ---- */
 .histcard { padding: 6px 10px; }
 .histrow {

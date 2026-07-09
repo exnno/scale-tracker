@@ -4,7 +4,7 @@ A practice guide for piano scales following the ABRSM syllabus. It tells you wha
 to play and you play it on your own piano — there's no microphone or listening.
 Mobile-first, installable, works offline.
 
-## Current state (Build 3, v3.0.0)
+## Current state (Build 4, v4.0.0)
 
 - **Grades 1–3 similar-motion scales** (majors and minors).
 - Pick a **grade**, choose whether to include **earlier grades**, choose which
@@ -21,8 +21,12 @@ Mobile-first, installable, works offline.
   (a week → fortnight → month).
 - **Upcoming** — a look-ahead showing what's due today, tomorrow, this week and
   later.
-- **History** — every scale in your set with its last rating and next-due; tap
-  one to see its full dated record.
+- **History** — with an **All / By key** view: see every scale in your set, or
+  focus on a single key (across all grades or just your current set) and see how
+  you've done on each of its forms and hands. Tap a scale for its full record.
+- **Workouts** — a log of every past practice session, newest first, each
+  expandable to the per-scale ratings for that sitting. Partial sessions (quit
+  part-way) are recorded too.
 - **Practise all** and **Surprise me** remain as manual overrides that ignore
   due-dates.
 - Work through the set one scale at a time, rating each **Struggled / Okay /
@@ -32,8 +36,6 @@ Mobile-first, installable, works offline.
 
 ## Not yet built
 
-- **Workout log** — browse a record of each past sitting (its own stored history,
-  planned next).
 - **"Complete keys (advanced)"** scope — defined in config, still parked (needs
   the all-12-keys data).
 - Tempo target display and metronome.
@@ -47,8 +49,8 @@ script files loading in a fixed order (`boot.js` last), shared global scope, a b
 integrity guard, `localStorage` for data, cache-first service worker for offline.
 Hosted on GitHub Pages and editable from the GitHub web UI.
 
-See `MAP.md` for the file/function map and `SCALEShandoff_v3.md` for full detail
-(`SCALEShandoff_v1.md` / `SCALEShandoff_v2.md` cover the earlier builds).
+See `MAP.md` for the file/function map and `SCALEShandoff_v4.md` for full detail
+(earlier `SCALEShandoff_v1..3.md` cover the earlier builds).
 
 ## Syllabus source
 

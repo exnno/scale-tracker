@@ -77,18 +77,45 @@ function sanitizeRatings(raw) {
   return out;
 }
 
+// Coerce an arbitrary parsed value into a safe workout-log array (Build 4).
+// Each entry: { t:number, mode:string, results:[{id:string, rating:valid}] }.
+// Anything malformed is dropped; a missing/garbage log becomes []. The array is
+// trimmed to the most recent MAX_SESSIONS_LOGGED (oldest dropped).
+function sanitizeSessions(raw) {
+  if (!Array.isArray(raw)) return [];
+  var out = [];
+  raw.forEach(function (e) {
+    if (!e || typeof e !== "object") return;
+    if (typeof e.t !== "number") return;
+    var mode = (typeof e.mode === "string") ? e.mode : "all";
+    var results = Array.isArray(e.results)
+      ? e.results.filter(function (x) {
+          return x && typeof x.id === "string" && validRating(x.rating);
+        }).map(function (x) { return { id: x.id, rating: x.rating }; })
+      : [];
+    if (results.length === 0) return; // a logged sitting always has >=1 rating
+    out.push({ t: e.t, mode: mode, results: results });
+  });
+  // keep chronological (oldest first) then cap to the most recent N
+  out.sort(function (a, b) { return a.t - b.t; });
+  if (out.length > MAX_SESSIONS_LOGGED) out = out.slice(out.length - MAX_SESSIONS_LOGGED);
+  return out;
+}
+
 // ---- load / save --------------------------------------------------------
 
 function load() {
   // integrity guard: refuse to run against a half-loaded build
   if (!bootIntegrityOk()) return;
 
-  var s = null, r = null;
+  var s = null, r = null, sess = null;
   try { s = JSON.parse(lsGet(K_SETTINGS)); } catch (e) { s = null; }
   try { r = JSON.parse(lsGet(K_RATINGS)); } catch (e) { r = null; }
+  try { sess = JSON.parse(lsGet(K_SESSIONS)); } catch (e) { sess = null; }
 
   state.settings = sanitizeSettings(s);
   state.ratings = sanitizeRatings(r);
+  state.sessions = sanitizeSessions(sess);
 }
 
 function saveSettings() {
@@ -101,17 +128,29 @@ function saveRatings() {
   return lsSet(K_RATINGS, JSON.stringify(state.ratings));
 }
 
-// Build 3: wipe everything back to a first-run state. Clears both stored keys
+// Build 4: persist the workout log. Trims to the cap before writing so the
+// stored array never grows without bound.
+function saveSessions() {
+  if (!bootIntegrityOk()) return false;
+  if (state.sessions.length > MAX_SESSIONS_LOGGED) {
+    state.sessions = state.sessions.slice(state.sessions.length - MAX_SESSIONS_LOGGED);
+  }
+  return lsSet(K_SESSIONS, JSON.stringify(state.sessions));
+}
+
+// Build 3: wipe everything back to a first-run state. Clears all stored keys
 // and resets the in-memory state to defaults. Guarded like the saves so we
 // never act against a half-loaded build.
 function resetAllData() {
   if (!bootIntegrityOk()) return false;
   lsRemove(K_SETTINGS);
   lsRemove(K_RATINGS);
+  lsRemove(K_SESSIONS);
   state.settings = Object.assign({}, DEFAULT_SETTINGS, {
     minorForms: DEFAULT_SETTINGS.minorForms.slice(),
   });
   state.ratings = {};
+  state.sessions = [];
   state.session = null;
   return true;
 }
@@ -127,6 +166,7 @@ function buildBackup() {
     exportedAt: new Date().toISOString(),
     settings: state.settings,
     ratings: state.ratings,
+    sessions: state.sessions,   // Build 4: workout log
   };
 }
 
@@ -145,12 +185,16 @@ function importText(text) {
     return { ok: false, message: "That doesn't look like a Scale Trainer save file." };
   }
   // Forward/back compatible: we validate fields we understand and ignore the rest.
+  // A pre-v4 file simply has no `sessions` key -> sanitizeSessions returns [].
   var newSettings = sanitizeSettings(parsed.settings);
   var newRatings = sanitizeRatings(parsed.ratings);
+  var newSessions = sanitizeSessions(parsed.sessions);
 
   state.settings = newSettings;
   state.ratings = newRatings;
+  state.sessions = newSessions;
   saveSettings();
   saveRatings();
+  saveSessions();
   return { ok: true, message: "Save file loaded." };
 }

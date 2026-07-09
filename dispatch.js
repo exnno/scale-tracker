@@ -110,6 +110,9 @@ function onClick(e) {
     case "go-history":
       clearTransientUi(); state.view = "history"; render(); break;
 
+    case "go-workouts":
+      clearTransientUi(); state.view = "workouts"; render(); break;
+
     case "go-home":
       clearTransientUi(); state.view = "home"; render(); break;
 
@@ -118,6 +121,30 @@ function onClick(e) {
       if (id) {
         if (state.ui.openHistory[id]) delete state.ui.openHistory[id];
         else state.ui.openHistory[id] = true;
+        render();
+      }
+      break;
+    }
+
+    case "hist-mode":
+      state.ui.historyMode = t.getAttribute("data-mode");
+      render(); break;
+
+    case "hist-key":
+      state.ui.historyKey = t.getAttribute("data-key");
+      render(); break;
+
+    case "hist-key-scope":
+      state.ui.historyKeyScope = t.getAttribute("data-scope");
+      // a key chosen under one scope may not exist under the other; the view
+      // guards for that, so no need to clear the selection here.
+      render(); break;
+
+    case "toggle-workout": {
+      var wt = parseInt(t.getAttribute("data-t"), 10);
+      if (!isNaN(wt)) {
+        if (state.ui.openWorkouts[wt]) delete state.ui.openWorkouts[wt];
+        else state.ui.openWorkouts[wt] = true;
         render();
       }
       break;

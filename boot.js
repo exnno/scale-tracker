@@ -11,9 +11,9 @@
 function bootIntegrityOk() {
   var required = [
     "buildPool", "expandRow", "itemInstruction",   // syllabus
-    "sanitizeSettings", "sanitizeRatings",          // storage validators
+    "sanitizeSettings", "sanitizeRatings", "sanitizeSessions", // storage validators
     "schedule", "buildDueSet", "dueCount", "isDue", // scheduler
-    "startSession", "rateCurrent",                  // session
+    "startSession", "rateCurrent", "commitWorkoutLog", // session
     "render",                                        // render
   ];
   for (var i = 0; i < required.length; i++) {

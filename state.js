@@ -16,19 +16,33 @@ const state = {
   // ratings map: { itemId: { last: "struggled"|"okay"|"nailed", history: [ {r, t} ] } }
   ratings: {},
 
-  // the active session (null when not practising)
-  //   { queue: [items], index: int, mode: "manual"|"surprise"|"all"|"due" }
+  // Build 4: workout log — array of past sittings, newest last:
+  //   { t: timestamp, mode: "due"|"all"|"surprise", results: [ {id, rating} ] }
+  sessions: [],
+
+  // the active session (null when not practising). Build 4 adds `results`,
+  // the per-scale ratings for THIS sitting (accumulated as you rate), so the
+  // log captures what happened this session — not each item's all-time last.
+  //   { queue: [items], index: int, mode: "...", results: [ {id, rating} ] }
   session: null,
 
-  // which screen is showing: "home" | "session" | "about" | "upcoming" | "history"
+  // which screen: "home" | "session" | "about" | "upcoming" | "history" | "workouts"
   view: "home",
 
   // transient UI state that doesn't persist:
-  //   resetArmed  — the two-step reset confirm on About is showing
-  //   openHistory — set of item ids whose history trail is expanded
+  //   resetArmed     — the two-step reset confirm on About is showing
+  //   openHistory    — set of item ids whose history trail is expanded
+  //   historyMode    — "all" | "bykey"  (History screen top toggle)
+  //   historyKey     — selected root in By-key mode (null = none picked yet)
+  //   historyKeyScope— "all" | "current" (By-key secondary toggle)
+  //   openWorkouts   — set of workout timestamps whose details are expanded
   ui: {
     resetArmed: false,
     openHistory: {},
+    historyMode: "all",
+    historyKey: null,
+    historyKeyScope: "all",
+    openWorkouts: {},
   },
 };
 

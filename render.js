@@ -47,6 +47,7 @@ function render() {
   else if (state.view === "about") { app.innerHTML = renderAbout(); }
   else if (state.view === "upcoming") { app.innerHTML = renderUpcoming(); }
   else if (state.view === "history") { app.innerHTML = renderHistory(); }
+  else if (state.view === "workouts") { app.innerHTML = renderWorkouts(); }
   else { app.innerHTML = renderHome(); }
 }
 
@@ -123,6 +124,7 @@ function renderHome() {
     + '<span class="headlinks">'
     + '<button class="link" data-action="go-upcoming">Upcoming</button>'
     + '<button class="link" data-action="go-history">History</button>'
+    + '<button class="link" data-action="go-workouts">Workouts</button>'
     + '<button class="link" data-action="go-about">About</button>'
     + '</span></header>'
 
@@ -255,60 +257,195 @@ function renderUpcoming() {
     + body;
 }
 
-// ---- history screen (Build 3) -------------------------------------------
+// ---- history screen (Build 3, reworked Build 4) -------------------------
 
-function renderHistory() {
-  var sel = currentSelection();
-  var pool = buildPool(sel);
+// Every rateable item across the whole syllabus (all grades, all forms), used
+// by the By-key "All grades" scope. Grade 3 + cumulative + all forms expands to
+// the full G1-3 item set.
+function allSyllabusItems() {
+  return buildPool({ grade: 3, scope: "cumulative", minorForms: ["natural", "harmonic", "melodic"] });
+}
 
-  if (!pool.length) {
-    return ''
-      + '<header class="bar">'
-      + '<button class="link" data-action="go-home">\u2039 Back</button>'
-      + '<h1>History</h1></header>'
-      + '<section class="card"><p class="hint">No scales in the current set. '
-      + 'Pick a grade and at least one minor form on the home screen.</p></section>';
+// One history row (shared by both modes). `showGrade` adds a small grade tag,
+// used in the By-key all-grades view so out-of-selection scales are clear.
+function historyRow(it, showGrade) {
+  var rec = ratingFor(it.id);
+  var last = rec.last;
+  var dot = last ? ('<span class="dot dot-' + last + '"></span>') : '<span class="dot dot-none"></span>';
+  var lastText = last ? RATING_LABEL[last] : "Not practised yet";
+  var due = nextDueFor(it.id);
+  var open = state.ui.openHistory[it.id];
+  var gradeTag = showGrade ? '<span class="gradetag">G' + it.grade + '</span> ' : '';
+
+  var trail = "";
+  if (open) {
+    if (rec.history.length) {
+      var entries = rec.history.slice().reverse().map(function (h) {
+        var when = new Date(h.t);
+        var dstr = when.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+        return '<li><span class="dot dot-' + h.r + '"></span>'
+          + esc(RATING_LABEL[h.r]) + ' \u00b7 <span class="hint">' + esc(dstr) + '</span></li>';
+      }).join("");
+      trail = '<ul class="trail">' + entries + '</ul>';
+    } else {
+      trail = '<p class="hint trail">No ratings recorded yet.</p>';
+    }
   }
 
-  var rows = pool.map(function (it) {
-    var rec = ratingFor(it.id);
-    var last = rec.last;
-    var dot = last ? ('<span class="dot dot-' + last + '"></span>') : '<span class="dot dot-none"></span>';
-    var lastText = last ? RATING_LABEL[last] : "Not practised yet";
-    var due = nextDueFor(it.id);
-    var open = state.ui.openHistory[it.id];
+  return '<div class="histrow" data-action="toggle-history-row" data-id="' + esc(it.id) + '">'
+    + '<div class="histhead">'
+    + dot
+    + '<span class="histname">' + gradeTag + esc(it.instruction) + '</span>'
+    + '<span class="histmeta hint">' + esc(lastText) + ' \u00b7 ' + esc(dueLabel(due)) + '</span>'
+    + '</div>'
+    + trail
+    + '</div>';
+}
 
-    var trail = "";
-    if (open) {
-      if (rec.history.length) {
-        var entries = rec.history.slice().reverse().map(function (h) {
-          var when = new Date(h.t);
-          var dstr = when.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-          return '<li><span class="dot dot-' + h.r + '"></span>'
-            + esc(RATING_LABEL[h.r]) + ' \u00b7 <span class="hint">' + esc(dstr) + '</span></li>';
-        }).join("");
-        trail = '<ul class="trail">' + entries + '</ul>';
-      } else {
-        trail = '<p class="hint trail">No ratings recorded yet.</p>';
-      }
-    }
+function renderHistory() {
+  var mode = state.ui.historyMode || "all";
 
-    return '<div class="histrow" data-action="toggle-history-row" data-id="' + esc(it.id) + '">'
-      + '<div class="histhead">'
-      + dot
-      + '<span class="histname">' + esc(it.instruction) + '</span>'
-      + '<span class="histmeta hint">' + esc(lastText) + ' \u00b7 ' + esc(dueLabel(due)) + '</span>'
-      + '</div>'
-      + trail
-      + '</div>';
-  }).join("");
+  var modeToggle = '<div class="segment">'
+    + '<button class="seg' + (mode === "all" ? " is-on" : "") + '" data-action="hist-mode" data-mode="all">All scales</button>'
+    + '<button class="seg' + (mode === "bykey" ? " is-on" : "") + '" data-action="hist-mode" data-mode="bykey">By key</button>'
+    + '</div>';
 
-  return ''
+  var head = ''
     + '<header class="bar">'
     + '<button class="link" data-action="go-home">\u2039 Back</button>'
     + '<h1>History</h1></header>'
+    + modeToggle;
+
+  if (mode === "bykey") return head + renderHistoryByKey();
+
+  // ---- All mode: the full list for the current selection ----
+  var sel = currentSelection();
+  var pool = buildPool(sel);
+  if (!pool.length) {
+    return head + '<section class="card"><p class="hint">No scales in the current set. '
+      + 'Pick a grade and at least one minor form on the home screen.</p></section>';
+  }
+  var rows = pool.map(function (it) { return historyRow(it, false); }).join("");
+  return head
     + '<p class="hint subhead">Every scale in your current set. Tap one to see its full record.</p>'
     + '<section class="card histcard">' + rows + '</section>';
+}
+
+// By-key mode: pick a root, then see that key's items with their ratings.
+function renderHistoryByKey() {
+  var scope = state.ui.historyKeyScope || "all";
+  var chosen = state.ui.historyKey;
+
+  // source pool depends on the secondary scope toggle
+  var source = (scope === "current") ? buildPool(currentSelection()) : allSyllabusItems();
+
+  // distinct roots present in the source, in syllabus-ish order
+  var order = ["C", "G", "D", "A", "E", "B", "F", "Bb", "Eb"];
+  var present = {};
+  source.forEach(function (it) { present[it.root] = true; });
+  var roots = order.filter(function (r) { return present[r]; });
+  // any roots not in the canonical order, appended
+  Object.keys(present).forEach(function (r) { if (order.indexOf(r) === -1) roots.push(r); });
+
+  var scopeToggle = '<div class="segment segment-sub">'
+    + '<button class="seg' + (scope === "all" ? " is-on" : "") + '" data-action="hist-key-scope" data-scope="all">All grades</button>'
+    + '<button class="seg' + (scope === "current" ? " is-on" : "") + '" data-action="hist-key-scope" data-scope="current">Current set</button>'
+    + '</div>';
+
+  var keyChips = roots.map(function (r) {
+    var on = (chosen === r) ? " is-on" : "";
+    return '<button class="chip' + on + '" data-action="hist-key" data-key="' + esc(r) + '">' + esc(prettyRoot(r)) + '</button>';
+  }).join("");
+
+  var body;
+  if (!chosen || !present[chosen]) {
+    body = '<p class="hint">Pick a key above to see how you\u2019ve done on it.</p>';
+  } else {
+    var items = source.filter(function (it) { return it.root === chosen; });
+    // stable, readable order: major before minor, then form, then HT/R/L
+    var handOrder = { HT: 0, R: 1, L: 2 };
+    items.sort(function (a, b) {
+      if (a.quality !== b.quality) return a.quality === "major" ? -1 : 1;
+      var fa = a.form || "", fb = b.form || "";
+      if (fa !== fb) return fa < fb ? -1 : 1;
+      var ha = handOrder[a.hands === "together" ? "HT" : a.hand];
+      var hb = handOrder[b.hands === "together" ? "HT" : b.hand];
+      return ha - hb;
+    });
+    var showGrade = (scope === "all");
+    var rows = items.map(function (it) { return historyRow(it, showGrade); }).join("");
+    body = '<section class="card histcard">' + rows + '</section>';
+  }
+
+  return scopeToggle
+    + '<section class="card"><h2>Key</h2><div class="chips">' + keyChips + '</div></section>'
+    + body;
+}
+
+// ---- workouts screen (Build 4) ------------------------------------------
+
+function prettyMode(mode) {
+  if (mode === "due") return "Today\u2019s practice";
+  if (mode === "surprise") return "Surprise me";
+  if (mode === "all") return "Practise all";
+  return mode;
+}
+
+function renderWorkouts() {
+  var head = ''
+    + '<header class="bar">'
+    + '<button class="link" data-action="go-home">\u2039 Back</button>'
+    + '<h1>Workouts</h1></header>';
+
+  var log = state.sessions;
+  if (!log || !log.length) {
+    return head
+      + '<section class="card"><p class="hint">No workouts recorded yet. '
+      + 'Finish (or quit part-way through) a practice session and it\u2019ll show up here.</p></section>';
+  }
+
+  // newest first
+  var entries = log.slice().reverse().map(function (w) {
+    var when = new Date(w.t);
+    var dstr = when.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    var tstr = when.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    var n = w.results.length;
+
+    // tally per rating for a compact summary line
+    var tally = { struggled: 0, okay: 0, nailed: 0 };
+    w.results.forEach(function (r) { if (tally[r.rating] !== undefined) tally[r.rating]++; });
+    var dots = ''
+      + (tally.nailed ? '<span class="tally"><span class="dot dot-nailed"></span>' + tally.nailed + '</span>' : '')
+      + (tally.okay ? '<span class="tally"><span class="dot dot-okay"></span>' + tally.okay + '</span>' : '')
+      + (tally.struggled ? '<span class="tally"><span class="dot dot-struggled"></span>' + tally.struggled + '</span>' : '');
+
+    var open = state.ui.openWorkouts[w.t];
+    var detail = "";
+    if (open) {
+      var byId = {};
+      // map id -> instruction via the full syllabus item set (ids are stable)
+      allSyllabusItems().forEach(function (it) { byId[it.id] = it.instruction; });
+      var lines = w.results.map(function (r) {
+        var label = byId[r.id] || r.id;
+        return '<li><span class="dot dot-' + r.rating + '"></span>'
+          + esc(label) + ' \u00b7 <span class="hint">' + esc(RATING_LABEL[r.rating]) + '</span></li>';
+      }).join("");
+      detail = '<ul class="trail">' + lines + '</ul>';
+    }
+
+    return '<div class="histrow" data-action="toggle-workout" data-t="' + w.t + '">'
+      + '<div class="histhead">'
+      + '<span class="histname">' + esc(prettyMode(w.mode)) + '</span>'
+      + '<span class="histmeta hint">' + esc(dstr) + ' \u00b7 ' + esc(tstr) + ' \u00b7 '
+      + n + ' scale' + (n === 1 ? "" : "s") + ' ' + dots + '</span>'
+      + '</div>'
+      + detail
+      + '</div>';
+  }).join("");
+
+  return head
+    + '<p class="hint subhead">Your past practice sessions, newest first. Tap one for the details.</p>'
+    + '<section class="card histcard">' + entries + '</section>';
 }
 
 // ---- about screen -------------------------------------------------------
