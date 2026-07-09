@@ -1,8 +1,8 @@
 // session.js — Scale Trainer
-// Builds a practice session's queue and applies ratings. Build 1 has no
-// adaptive scheduler yet (that's Build 2) — ordering here is simple: syllabus
-// order for "all"/"manual", shuffled for "surprise". The rating plumbing is
-// wired now so Build 2 can hang the scheduler off the recorded history.
+// Builds a practice session's queue and applies ratings. Build 2 added the
+// scheduler ("due" mode). Build 3 adds the PACING PLAN: a "due" session is
+// sized to a portion of the backlog (ceil(due / practiceDaysPerWeek)) unless a
+// manual session cap overrides it. The scheduler itself is untouched.
 // (c) 2026 Peter Birchley. All rights reserved.
 
 // Fisher-Yates shuffle (returns a new array).
@@ -22,17 +22,42 @@ function applyCap(items) {
   return items;
 }
 
+// Build 3 — the planned portion for a "due" sitting.
+//   - If a manual session cap is set (>0), that wins (the override).
+//   - Otherwise the plan portion = ceil(dueCount / practiceDaysPerWeek),
+//     floored at 1 so a non-empty due set never serves zero.
+// Returns a positive integer (the number of due items to serve).
+function plannedPortion(selection) {
+  var due = dueCount(selection);
+  if (due === 0) return 0;
+
+  var cap = state.settings.sessionCap;
+  if (cap && cap > 0) return Math.min(cap, due);
+
+  var dpw = state.settings.practiceDaysPerWeek || DEFAULT_SETTINGS.practiceDaysPerWeek;
+  var portion = Math.ceil(due / dpw);
+  if (portion < 1) portion = 1;
+  return Math.min(portion, due);
+}
+
 // Start a session.
 //   mode: "all"      -> whole pool in syllabus order
 //         "surprise" -> whole pool shuffled
 //         "manual"   -> caller supplies an explicit array of items
-//         "due"      -> only items due today (spaced repetition), weakest-first
+//         "due"      -> due items (spaced repetition), weakest-first, sized to
+//                       the planned portion (Build 3)
 function startSession(mode, manualItems) {
   var pool;
   if (mode === "manual" && Array.isArray(manualItems)) {
     pool = manualItems;
   } else if (mode === "due") {
     pool = buildDueSet(currentSelection());   // already ordered weakest-first
+    // size to the plan portion (manual cap already folded into plannedPortion)
+    var n = plannedPortion(currentSelection());
+    if (n > 0 && pool.length > n) pool = pool.slice(0, n);
+    state.session = { queue: pool, index: 0, mode: mode };
+    state.view = "session";
+    return state.session;
   } else {
     pool = buildPool(currentSelection());
     if (mode === "surprise") pool = shuffled(pool);

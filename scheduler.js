@@ -5,6 +5,9 @@
 //   - is it due now? (due timestamp reached, or never practised)
 // and builds the "Today's practice" set: everything due, ordered weakest-first.
 //
+// Build 3 adds read-only look-ahead helpers (nextDueFor, upcomingBuckets) for
+// the Upcoming view. The INTERVAL MODEL IS UNCHANGED — pacing lives in session.js.
+//
 // No DOM, no storage writes of its own — session.js calls schedule() when a
 // rating is applied and persists via saveRatings(). Pure + testable, same
 // discipline as syllabus.js. (c) 2026 Peter Birchley. All rights reserved.
@@ -115,4 +118,56 @@ function buildDueSet(selection, now) {
 // Count of due items in a selection (for the home-screen line).
 function dueCount(selection, now) {
   return buildDueSet(selection, now).length;
+}
+
+// ---- Build 3: read-only look-ahead (Upcoming view) ---------------------
+
+// The next-due timestamp for an item, or null if never scheduled (due now).
+function nextDueFor(id) {
+  var rec = state.ratings[id];
+  if (!rec || typeof rec.nextDue !== "number") return null;
+  return rec.nextDue;
+}
+
+// Group the current selection's items into relative due buckets for the
+// Upcoming view (decision 3A). Never-scheduled items land in "today".
+// Returns { today:[items], tomorrow:[], week:[], later:[] } with each list in
+// soonest-first order (never-scheduled treated as soonest within "today").
+function upcomingBuckets(selection, now) {
+  now = now || Date.now();
+  var pool = buildPool(selection);
+
+  // Day boundaries from local midnight so "tomorrow" means the calendar day.
+  var start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  var startMs = start.getTime();
+  var endToday = startMs + DAY_MS;        // < this = today
+  var endTomorrow = startMs + 2 * DAY_MS; // < this = tomorrow
+  var endWeek = startMs + 7 * DAY_MS;     // < this = within the next 7 days
+
+  var out = { today: [], tomorrow: [], week: [], later: [] };
+
+  pool.forEach(function (it) {
+    var due = nextDueFor(it.id);
+    // never scheduled OR due at/before end of today -> today
+    if (due === null || due < endToday) out.today.push(it);
+    else if (due < endTomorrow) out.tomorrow.push(it);
+    else if (due < endWeek) out.week.push(it);
+    else out.later.push(it);
+  });
+
+  // sort each bucket soonest-first; nulls (never scheduled) sort first
+  function bySoonest(a, b) {
+    var da = nextDueFor(a.id), db = nextDueFor(b.id);
+    if (da === null && db === null) return 0;
+    if (da === null) return -1;
+    if (db === null) return 1;
+    return da - db;
+  }
+  out.today.sort(bySoonest);
+  out.tomorrow.sort(bySoonest);
+  out.week.sort(bySoonest);
+  out.later.sort(bySoonest);
+
+  return out;
 }

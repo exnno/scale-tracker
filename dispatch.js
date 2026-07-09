@@ -46,6 +46,11 @@ function handleImportFile(file) {
   reader.readAsText(file);
 }
 
+// Leaving the About view should disarm a pending reset so it can't fire later.
+function clearTransientUi() {
+  state.ui.resetArmed = false;
+}
+
 // ---- main click handler -------------------------------------------------
 
 function onClick(e) {
@@ -72,6 +77,10 @@ function onClick(e) {
       saveSettings(); render(); break;
     }
 
+    case "set-days":
+      state.settings.practiceDaysPerWeek = parseInt(t.getAttribute("data-days"), 10);
+      saveSettings(); render(); break;
+
     case "start-due":
       if (dueCount(currentSelection()) === 0) return;
       startSession("due"); render(); break;
@@ -93,10 +102,40 @@ function onClick(e) {
       endSession(); render(); break;
 
     case "go-about":
-      state.view = "about"; render(); break;
+      clearTransientUi(); state.view = "about"; render(); break;
+
+    case "go-upcoming":
+      clearTransientUi(); state.view = "upcoming"; render(); break;
+
+    case "go-history":
+      clearTransientUi(); state.view = "history"; render(); break;
 
     case "go-home":
-      state.view = "home"; render(); break;
+      clearTransientUi(); state.view = "home"; render(); break;
+
+    case "toggle-history-row": {
+      var id = t.getAttribute("data-id");
+      if (id) {
+        if (state.ui.openHistory[id]) delete state.ui.openHistory[id];
+        else state.ui.openHistory[id] = true;
+        render();
+      }
+      break;
+    }
+
+    case "reset-arm":
+      state.ui.resetArmed = true; render(); break;
+
+    case "reset-cancel":
+      state.ui.resetArmed = false; render(); break;
+
+    case "reset-confirm":
+      resetAllData();
+      state.ui.resetArmed = false;
+      state.ui.openHistory = {};
+      state.view = "home";
+      render();
+      break;
 
     case "export":
       doExport(); break;
@@ -115,7 +154,7 @@ function onChange(e) {
     var v = parseInt(t.value, 10);
     state.settings.sessionCap = (isNaN(v) || v < 0) ? 0 : v;
     saveSettings();
-    // re-render so the pool count line stays accurate
+    // re-render so the pool count / plan portion line stays accurate
     render();
   }
 }

@@ -15,6 +15,10 @@ function lsSet(key, value) {
   try { localStorage.setItem(key, value); return true; }
   catch (e) { return false; }
 }
+function lsRemove(key) {
+  try { localStorage.removeItem(key); return true; }
+  catch (e) { return false; }
+}
 
 // ---- validation helpers -------------------------------------------------
 
@@ -22,6 +26,9 @@ function validGrade(g) { return g === 1 || g === 2 || g === 3; }
 function validScope(s) { return s === "grade" || s === "cumulative" || s === "complete"; }
 function validForm(f) { return f === "natural" || f === "harmonic" || f === "melodic"; }
 function validRating(r) { return RATINGS.indexOf(r) !== -1; }
+function validDaysPerWeek(n) {
+  return typeof n === "number" && n >= MIN_DPW && n <= MAX_DPW && Math.floor(n) === n;
+}
 
 // Coerce an arbitrary parsed object into a safe settings object.
 function sanitizeSettings(raw) {
@@ -35,6 +42,11 @@ function sanitizeSettings(raw) {
     }
     if (typeof raw.sessionCap === "number" && raw.sessionCap >= 0) {
       out.sessionCap = Math.floor(raw.sessionCap);
+    }
+    // Build 3: practice plan. Additive + optional — an old blob without it
+    // simply keeps the default (DEFAULT_SETTINGS.practiceDaysPerWeek).
+    if (validDaysPerWeek(raw.practiceDaysPerWeek)) {
+      out.practiceDaysPerWeek = raw.practiceDaysPerWeek;
     }
   }
   return out;
@@ -87,6 +99,21 @@ function saveSettings() {
 function saveRatings() {
   if (!bootIntegrityOk()) return false;
   return lsSet(K_RATINGS, JSON.stringify(state.ratings));
+}
+
+// Build 3: wipe everything back to a first-run state. Clears both stored keys
+// and resets the in-memory state to defaults. Guarded like the saves so we
+// never act against a half-loaded build.
+function resetAllData() {
+  if (!bootIntegrityOk()) return false;
+  lsRemove(K_SETTINGS);
+  lsRemove(K_RATINGS);
+  state.settings = Object.assign({}, DEFAULT_SETTINGS, {
+    minorForms: DEFAULT_SETTINGS.minorForms.slice(),
+  });
+  state.ratings = {};
+  state.session = null;
+  return true;
 }
 
 // ---- export / import (human-readable save file) -------------------------

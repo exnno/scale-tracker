@@ -51,11 +51,16 @@ html, body {
 .bar h1 { font-size: 1.25rem; font-weight: 700; margin: 0; letter-spacing: .01em; }
 .bar .count { color: var(--ink-soft); font-variant-numeric: tabular-nums; font-size: 1rem; }
 
+/* header link cluster (Upcoming / History / About) */
+.headlinks { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; justify-content: flex-end; }
+
 .link {
   background: none; border: none; color: var(--brass);
   font-size: 1rem; font-family: inherit; padding: 8px; cursor: pointer;
 }
 .link:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 8px; }
+
+.subhead { margin: 0 2px 12px; }
 
 /* ---- cards ---- */
 .card {
@@ -72,7 +77,15 @@ html, body {
 
 .hint { color: var(--ink-soft); font-size: .85rem; }
 
-/* ---- chips (grade / scope / form selectors) ---- */
+/* count badge next to a bucket heading */
+.badge {
+  display: inline-block; min-width: 1.6em; text-align: center;
+  background: var(--surface-2); color: var(--ink);
+  border-radius: 999px; padding: 2px 8px; font-size: .8rem;
+  font-variant-numeric: tabular-nums; margin-left: 6px; vertical-align: middle;
+}
+
+/* ---- chips (grade / scope / form / days selectors) ---- */
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
 .chip {
   background: var(--surface-2); color: var(--ink);
@@ -82,6 +95,13 @@ html, body {
 }
 .chip.is-on { background: var(--brass); border-color: var(--brass); color: #201a08; font-weight: 600; }
 .chip:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+/* practice-plan day chooser — smaller round chips sitting inline in a sentence */
+.dpwrow { display: inline-flex; flex-wrap: wrap; gap: 6px; vertical-align: middle; margin: 0 4px; }
+.dpwrow .chip {
+  min-height: 40px; min-width: 44px; padding: 8px 0; text-align: center;
+  justify-content: center;
+}
 
 /* ---- session cap input ---- */
 .capline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 2; }
@@ -99,7 +119,7 @@ html, body {
 .startrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
 .startrow > button { flex: 1 1 auto; }
 
-/* Build 2: due-set layout */
+/* due-set layout */
 .primary.wide { display: block; width: 100%; margin-top: 4px; }
 .duehint { margin: 10px 0 0; }
 .manualrow { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -108,13 +128,15 @@ html, body {
   border-color: var(--line); font-weight: 600; cursor: default;
 }
 
-.primary, .secondary {
+.primary, .secondary, .danger {
   border-radius: var(--radius); padding: 16px 20px; font-size: 1.05rem;
   font-family: inherit; cursor: pointer; min-height: 54px; border: 1px solid transparent;
 }
 .primary { background: var(--brass); color: #201a08; font-weight: 700; border-color: var(--brass); }
 .secondary { background: var(--surface-2); color: var(--ink); border-color: var(--line); }
-.primary:focus-visible, .secondary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.danger { background: var(--surface-2); color: var(--struggled); border-color: var(--struggled); font-weight: 700; }
+.danger:active { background: var(--struggled); color: #fff; }
+.primary:focus-visible, .secondary:focus-visible, .danger:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 /* ---- progress bar ---- */
 .progress { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin: 0 2px 20px; }
@@ -150,6 +172,41 @@ html, body {
 @media (min-width: 480px) {
   .rates { flex-direction: row; }
   .rates .rate { flex: 1; }
+}
+
+/* ---- upcoming view ---- */
+.uplist { list-style: none; margin: 0; padding: 0; }
+.uprow {
+  padding: 10px 2px; border-bottom: 1px solid var(--line);
+  font-size: 1.05rem;
+}
+.uprow:last-child { border-bottom: none; }
+
+/* ---- history view ---- */
+.histcard { padding: 6px 10px; }
+.histrow {
+  padding: 12px 6px; border-bottom: 1px solid var(--line); cursor: pointer;
+}
+.histrow:last-child { border-bottom: none; }
+.histhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.histname { font-size: 1.05rem; font-weight: 600; }
+.histmeta { flex-basis: 100%; margin-left: 22px; }
+
+/* rating dot */
+.dot {
+  width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+  flex: 0 0 auto; border: 1px solid var(--line);
+}
+.dot-struggled { background: var(--struggled); border-color: var(--struggled); }
+.dot-okay { background: var(--okay); border-color: var(--okay); }
+.dot-nailed { background: var(--nailed); border-color: var(--nailed); }
+.dot-none { background: transparent; }
+
+/* expanded per-scale trail */
+.trail { list-style: none; margin: 12px 0 2px; padding: 0 0 0 22px; }
+.trail li {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0; font-size: .95rem;
 }
 
 /* ---- done screen ---- */

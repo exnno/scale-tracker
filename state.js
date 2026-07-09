@@ -10,17 +10,26 @@ const state = {
     scope: "grade",
     minorForms: ["harmonic"],
     sessionCap: 0,
+    practiceDaysPerWeek: 4,
   },
 
   // ratings map: { itemId: { last: "struggled"|"okay"|"nailed", history: [ {r, t} ] } }
   ratings: {},
 
   // the active session (null when not practising)
-  //   { queue: [items], index: int, mode: "manual"|"surprise"|"all" }
+  //   { queue: [items], index: int, mode: "manual"|"surprise"|"all"|"due" }
   session: null,
 
-  // which screen is showing: "home" | "session" | "about"
+  // which screen is showing: "home" | "session" | "about" | "upcoming" | "history"
   view: "home",
+
+  // transient UI state that doesn't persist:
+  //   resetArmed  — the two-step reset confirm on About is showing
+  //   openHistory — set of item ids whose history trail is expanded
+  ui: {
+    resetArmed: false,
+    openHistory: {},
+  },
 };
 
 // ---- pure helpers -------------------------------------------------------

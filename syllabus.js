@@ -206,3 +206,19 @@ function buildPool(opts) {
 
 // Count helper for UI ("today's pool: N items").
 function poolSize(opts) { return buildPool(opts).length; }
+
+// ---- per-grade minor-form requirements (Build 3) ------------------------
+// Which minor forms this grade's syllabus actually LISTS (the union across all
+// that grade's minor rows). Used for the home-screen "you only need X for this
+// grade, but you can add more if you wish" note. Pure — derived from SYLLABUS,
+// so it stays correct if the data changes.
+function gradeRequiredForms(grade) {
+  var set = {};
+  SYLLABUS.forEach(function (row) {
+    if (row.grade === grade && row.quality === "minor" && Array.isArray(row.minorForms)) {
+      row.minorForms.forEach(function (f) { set[f] = true; });
+    }
+  });
+  // return in canonical order: natural, harmonic, melodic
+  return ["natural", "harmonic", "melodic"].filter(function (f) { return set[f]; });
+}
